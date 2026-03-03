@@ -1,12 +1,37 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { theme } from '../theme';
-import { recipes } from '../data/recipes';
-import { Plus, Clock, Zap } from 'lucide-react-native';
+import { Plus, Clock, Zap, Search } from 'lucide-react-native';
 import { useAppContext } from '../context/AppContext';
+
+const API_URL = 'http://localhost:3006';
 
 export default function DiscoverScreen() {
     const { addToPlan } = useAppContext();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [recipes, setRecipes] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    const fetchRecipes = async (query = '') => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            setRecipes(data);
+        } catch (error) {
+            console.error('Error fetching recipes:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchRecipes();
+    }, []);
+
+    const handleSearch = () => {
+        fetchRecipes(searchQuery);
+    };
 
     const renderRecipe = ({ item }) => (
         <View style={styles.card}>
@@ -43,15 +68,41 @@ export default function DiscoverScreen() {
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Discover Meals</Text>
-                <Text style={styles.headerSubtitle}>Curated for your goals</Text>
+                <Text style={styles.headerSubtitle}>Search 1M+ recipes from Food.com</Text>
+
+                <View style={styles.searchBar}>
+                    <Search size={20} color={theme.colors.textMuted} style={styles.searchIcon} />
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder="Search recipes (e.g. chicken alfredo)"
+                        placeholderTextColor={theme.colors.textMuted}
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        onSubmitEditing={handleSearch}
+                        returnKeyType="search"
+                    />
+                </View>
             </View>
-            <FlatList
-                data={recipes}
-                renderItem={renderRecipe}
-                keyExtractor={item => item.id}
-                contentContainerStyle={styles.list}
-                showsVerticalScrollIndicator={false}
-            />
+
+            {loading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={theme.colors.primary} />
+                    <Text style={styles.loadingText}>Searching our massive database...</Text>
+                </View>
+            ) : (
+                <FlatList
+                    data={recipes}
+                    renderItem={renderRecipe}
+                    keyExtractor={item => item.id}
+                    contentContainerStyle={styles.list}
+                    showsVerticalScrollIndicator={false}
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <Text style={styles.emptyText}>No recipes found for "{searchQuery}"</Text>
+                        </View>
+                    }
+                />
+            )}
         </View>
     );
 }
@@ -75,6 +126,44 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: theme.colors.textMuted,
         marginTop: 4,
+        marginBottom: 16,
+    },
+    searchBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.roundness.md,
+        paddingHorizontal: 12,
+        height: 50,
+        borderWidth: 1,
+        borderColor: theme.colors.surfaceLight,
+    },
+    searchIcon: {
+        marginRight: 8,
+    },
+    searchInput: {
+        flex: 1,
+        color: theme.colors.text,
+        fontSize: 16,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        color: theme.colors.textMuted,
+        marginTop: 12,
+        fontSize: 16,
+    },
+    emptyContainer: {
+        padding: 40,
+        alignItems: 'center',
+    },
+    emptyText: {
+        color: theme.colors.textMuted,
+        fontSize: 16,
+        textAlign: 'center',
     },
     list: {
         paddingHorizontal: theme.spacing.md,
