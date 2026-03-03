@@ -1,41 +1,13 @@
-# FitFeast Setup Prompt
-
-If you are setting up this project for the first time in a new Antigravity workspace, copy and paste the text below as your initial prompt:
-
----
-
-### Antigravity Setup Instructions
-
-"Hey Antigravity, please help me set up the FitFeast project from GitHub and get it running in a mobile preview. Please follow these steps:
+Hey Antigravity, please help me set up the FitFeast project from GitHub and get it running in a mobile preview with the full 1M+ recipe database. Please follow these exact steps:
 
 1. **Clone the Project**: Clone the repository from `https://github.com/andrewg1729/mealprep.git` into the current workspace.
 2. **Setup Backend**:
-    - Go to the `server/` directory.
+    - Navigate to the `server/` directory.
     - Run `npm install`.
-    - Download the full dataset (33MB) to `server/recipes.csv` from `https://huggingface.co/datasets/AkashPS11/recipes_data_food.com/resolve/main/recipes.csv?download=true`.
-    - Start the backend on port 3006 using `npm start`.
+    - Download the full 32MB dataset to `server/recipes.csv` from: `https://huggingface.co/datasets/AkashPS11/recipes_data_food.com/resolve/main/recipes.csv?download=true`.
+    - Start the backend server on port 3006 using `npm start`.
 3. **Setup Frontend**:
-    - In the root directory, run `npm install`.
+    - Return to the root directory and run `npm install`.
     - Start the app on port 3005 using `npx expo start --web --port 3005 --non-interactive`.
-4. **Mobile Preview**: Open a browser window to `http://localhost:3005`. Resize the window to an iPhone 14 aspect ratio (**390x844**) and wait for the app to load.
-5. **Report Ready**: Let me know once the app is visible and ready for development."
-
----
-
-## Project Overview
-FitFeast is a hybrid mobile app combining **Mealime-style** meal planning with **MyFitnessPal-style** calorie and macro tracking.
-
-- **Stack**: React Native (Expo), React Navigation, Lucide Icons.
-- **Key Features**: Discover Recipes, Weekly Planner, Macro Tracker (SVG Rings), and an automated Grocery List.
-
-## Dev Commands
-```bash
-# Run on Web (Port 3005)
-npx expo start --web --port 3005
-
-# Run for Android
-npx expo start --android
-
-# Run for iOS
-npx expo start --ios
-```
+4. **Mobile Preview**: Open a browser window to `http://localhost:3005`. Resize the window to an iPhone 14 aspect ratio (**390x844**), wait for the app to load, and verify that I can search for "chicken" and get real results from the backend.
+5. **Report Ready**: Let me know once everything is running and accessible.
