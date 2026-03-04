@@ -1,15 +1,17 @@
-Hey Antigravity, please help me set up a backend searchable database for my existing FitFeast frontend using a 2M+ recipe dataset. I have my frontend already in place, so DO NOT overwrite any files in the root directory. Please follow these steps:
+Hey Antigravity, please help me completely replace my existing backend server with the high-performance 2M+ recipe backend from this project. My frontend is ready, but I need the new SQLite-powered search engine. Please follow these exact steps:
 
-1. **Get the Server Code**: Download or clone only the `/server` directory from `https://github.com/andrewg1729/mealprep.git` into a folder named `/server` in my current workspace.
-2. **Setup Dependencies**:
-    - Enter the `/server` folder.
-    - Run `npm install` (this will install Express, Better-SQLite3, and CSV Parser).
-    - Ensure `pip` is available and run `pip install kagglehub`.
-3. **Download & Import the 2.2M Recipe Dataset**:
-    - Run `python download_dataset.py` to fetch the dataset from Kaggle.
-    - Capturing the output path from the python script, run: `node import_recipes.js <PATH_TO_CSV>`.
-    - **Wait** for the importer to finish (this will take 5-10 minutes to process 2 million recipes into a SQLite database).
-4. **Start & Verify**:
-    - Start the server on port 3006 using `npm start`.
-    - Verify it says "Connected to recipes database."
-5. **Final Check**: Confirm the backend is ready at `http://localhost:3006/search` so my frontend can start querying it.
+1. **Purge Old Backend**: 
+    - Completely delete my existing `server/` directory and any old `recipes.csv` or `recipes.db` files in the workspace to ensure no remnants of the old, low-quality datasets remain.
+2. **Install New Backend**:
+    - Create a new `/server` directory.
+    - Download/Clone `server.js`, `import_recipes.js`, `download_dataset.py`, and `package.json` from `https://github.com/andrewg1729/mealprep.git` into this new directory.
+3. **Setup Logic**:
+    - Inside `/server`, run `npm install`.
+    - Ensure `kagglehub` is installed via `pip install kagglehub`.
+    - Run `python download_dataset.py`.
+    - Using the path from the download script, run the importer: `node import_recipes.js <PATH_TO_CSV>`.
+    - *Note*: This will process 2.2M recipes and will take about 5-10 minutes.
+4. **Launch & Connect**:
+    - Start the new server with `npm start`.
+    - Verify it connects to the new SQLite database and listens on port 3006.
+5. **Final Confirmation**: Test a search for "Chicken" in my frontend to verify that 2.2 million high-quality recipes are now searchable.
