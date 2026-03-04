@@ -35,18 +35,29 @@ app.get('/search', (req, res) => {
         }
 
         // Format results to match frontend expectations
-        const formatted = results.map(r => ({
-            id: r.id.toString(),
-            title: r.title,
-            // Lack of images in dataset: provide a high-quality placeholder based on title keywords
-            image: `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80&keywords=${encodeURIComponent(r.title)}`,
-            calories: r.calories,
-            protein: r.protein,
-            carbs: r.carbs,
-            fat: r.fat,
-            time: '25m', // Static placeholder as dataset timing is inconsistent
-            ingredients: JSON.parse(r.ingredients.replace(/'/g, '"')) // Fix python-style lists
-        }));
+        const formatted = results.map(r => {
+            let ingredients = [];
+            try {
+                // Handle both Python-style (single quotes) and standard JSON
+                const sanitized = r.ingredients.replace(/'/g, '"');
+                ingredients = JSON.parse(sanitized);
+            } catch (e) {
+                // Fallback for simple comma-separated or malformed strings
+                ingredients = r.ingredients.split(',').map(s => s.trim().replace(/[\[\]"]/g, ''));
+            }
+
+            return {
+                id: r.id.toString(),
+                title: r.title,
+                image: `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80&keywords=${encodeURIComponent(r.title)}`,
+                calories: r.calories,
+                protein: r.protein,
+                carbs: r.carbs,
+                fat: r.fat,
+                time: '25m',
+                ingredients: ingredients
+            };
+        });
 
         res.json(formatted);
     } catch (err) {
