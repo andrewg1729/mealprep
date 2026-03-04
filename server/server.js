@@ -1,78 +1,58 @@
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
-const csv = require('csv-parser');
+const Database = require('better-sqlite3');
 
 const app = express();
 const PORT = 3006;
+const DB_PATH = path.join(__dirname, 'recipes.db');
 
 app.use(cors());
 app.use(express.json());
 
-let recipes = [];
-
-// Helper to parse R-style "c(...)" vectors
-function parseRVector(vectorStr) {
-    if (!vectorStr || !vectorStr.startsWith('c(')) return [];
-    const inner = vectorStr.substring(2, vectorStr.length - 1);
-    const items = inner.match(/\"(.*?)\"/g);
-    return items ? items.map(item => item.replace(/\"/g, '')) : [];
+let db;
+try {
+    db = new Database(DB_PATH, { fileMustExist: false });
+    console.log('Connected to recipes database.');
+} catch (err) {
+    console.error('Failed to connect to database:', err);
 }
-
-function parseTime(isoDuration) {
-    if (!isoDuration || isoDuration === 'NA') return '0m';
-    const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
-    if (!match) return isoDuration;
-    const h = match[1] ? `${match[1]}h ` : '';
-    const m = match[2] ? `${match[2]}m` : '';
-    return (h + m).trim() || '0m';
-}
-
-console.log('Loading recipes from CSV...');
-const csvPath = path.join(__dirname, 'recipes.csv');
-
-fs.createReadStream(csvPath)
-    .pipe(csv())
-    .on('data', (row) => {
-        // Only parse name for fast searching; parse full row when accessed?
-        // Actually search is most common action, let's just parse the full object.
-        const imageList = parseRVector(row.Images);
-        const imageUrl = imageList[0] || 'https://images.unsplash.com/photo-1490818387583-1baba5e638af?auto=format&fit=crop&w=800&q=80';
-
-        recipes.push({
-            id: row.RecipeId,
-            title: row.Name,
-            image: imageUrl,
-            calories: Math.round(parseFloat(row.Calories) || 0),
-            protein: Math.round(parseFloat(row.ProteinContent) || 0),
-            carbs: Math.round(parseFloat(row.CarbohydrateContent) || 0),
-            fat: Math.round(parseFloat(row.FatContent) || 0),
-            time: parseTime(row.CookTime),
-            ingredients: parseRVector(row.RecipeIngredientParts)
-        });
-    })
-    .on('end', () => {
-        console.log(`Successfully loaded ${recipes.length} recipes.`);
-    })
-    .on('error', (err) => {
-        console.error('Error loading CSV:', err);
-    });
 
 // Search Endpoint
 app.get('/search', (req, res) => {
     const query = (req.query.q || '').toLowerCase();
 
-    if (!query) {
-        // Return sample if no query
-        return res.json(recipes.slice(0, 50));
+    if (!db) return res.status(500).json({ error: 'Database not initialized' });
+
+    try {
+        let results;
+        if (!query) {
+            results = db.prepare('SELECT * FROM recipes LIMIT 50').all();
+        } else {
+            // Use LIKE for substring search on title
+            results = db.prepare('SELECT * FROM recipes WHERE title LIKE ? LIMIT 50')
+                .all(`%${query}%`);
+        }
+
+        // Format results to match frontend expectations
+        const formatted = results.map(r => ({
+            id: r.id.toString(),
+            title: r.title,
+            // Lack of images in dataset: provide a high-quality placeholder based on title keywords
+            image: `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80&keywords=${encodeURIComponent(r.title)}`,
+            calories: r.calories,
+            protein: r.protein,
+            carbs: r.carbs,
+            fat: r.fat,
+            time: '25m', // Static placeholder as dataset timing is inconsistent
+            ingredients: JSON.parse(r.ingredients.replace(/'/g, '"')) // Fix python-style lists
+        }));
+
+        res.json(formatted);
+    } catch (err) {
+        console.error('Search error:', err);
+        res.status(500).json({ error: 'Search failed' });
     }
-
-    const results = recipes
-        .filter(r => r.title.toLowerCase().includes(query))
-        .slice(0, 50);
-
-    res.json(results);
 });
 
 app.listen(PORT, () => {
