@@ -1,17 +1,16 @@
-Hey Antigravity, please help me completely replace my existing backend server with the high-performance 2M+ recipe backend from this project. My frontend is ready, but I need the new SQLite-powered search engine. Please follow these exact steps:
+Hey Antigravity, please help me completely replace my existing backend server with the new 2.2M recipe "Scraper Backend" from this repository. My frontend UI is ready, but I need the high-performance search engine that pulls real images from the web. Please follow these exact steps:
 
-1. **Purge Old Backend**: 
-    - Completely delete my existing `server/` directory and any old `recipes.csv` or `recipes.db` files in the workspace to ensure no remnants of the old, low-quality datasets remain.
-2. **Install New Backend**:
-    - Create a new `/server` directory.
-    - Download/Clone `server.js`, `import_recipes.js`, `download_dataset.py`, and `package.json` from `https://github.com/andrewg1729/mealprep.git` into this new directory.
-3. **Setup Logic**:
-    - Inside `/server`, run `npm install`.
+1. **Purge the Old Backend**: 
+    - Completely delete my current `server/` folder and any `recipes.db` or `recipes.csv` files to avoid dataset corruption.
+2. **Re-Initialize Server**:
+    - Download the new `server.js`, `import_recipes.js`, `download_dataset.py`, and `package.json` from `https://github.com/andrewg1729/mealprep.git` into a fresh `/server` directory.
+3. **Automated Setup**:
+    - Inside `/server`, run `npm install` (installs express, better-sqlite3, axios, etc.).
     - Ensure `kagglehub` is installed via `pip install kagglehub`.
-    - Run `python download_dataset.py`.
-    - Using the path from the download script, run the importer: `node import_recipes.js <PATH_TO_CSV>`.
-    - *Note*: This will process 2.2M recipes and will take about 5-10 minutes.
+    - Run `python download_dataset.py` to fetch the 2.2M-recipe archive.
+    - Run the importer: `node import_recipes.js <LOCAL_CSV_PATH>` (This takes ~5-10 minutes to process 2.2 million recipes).
 4. **Launch & Connect**:
-    - Start the new server with `npm start`.
-    - Verify it connects to the new SQLite database and listens on port 3006.
-5. **Final Confirmation**: Test a search for "Chicken" in my frontend to verify that 2.2 million high-quality recipes are now searchable.
+    - Start the server: `npm start`.
+    - Verify it says "Connected to recipes database."
+5. **Real-Time Image Check**: 
+    - Search for a recipe in my frontend. The backend will now automatically scrape the original recipe website for a high-quality "Open Graph" image and cache it for future use. My app will look premium with real food photography!
